@@ -14,6 +14,8 @@
 
 set -euo pipefail
 
+rm 'function.zip'
+
 # ---- Config: edit these ----------------------------------------------
 FUNCTION_NAME="aws-ical-sync"
 REGION="eu-central-2"
@@ -21,20 +23,6 @@ SSM_PARAM_NAME="/ical-sync/google-service-account"
 SCHEDULE_EXPRESSION="cron(0 5 * * ? *)"   # 05:00 UTC daily - edit as needed
 ROLE_NAME="aws-ical-sync-role"
 
-# Define the iCal feeds to sync in a JSON array.
-# Use unique `uid_prefix` for each feed to prevent event deletion conflicts.
-SYNC_CONFIGS='[
-  {
-    "ical_url": "https://app.myice.hockey/api/players/ical/50553/113",
-    "calendar_id": "rene.grob76@gmail.com",
-    "uid_prefix": "ehc-"
-  },
-  {
-    "ical_url": "https://app.myice.hockey/api/players/ical/50553/7",
-    "calendar_id": "rene.grob76@gmail.com",
-    "uid_prefix": "shif-"
-  }
-]'
 # ------------------------------------------------------------------------
 
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
@@ -54,6 +42,9 @@ else
 fi
 
 cp lambda_function.py "$BUILD_DIR"/
+if [ -f sync_configs.py ]; then
+  cp sync_configs.py "$BUILD_DIR"/
+fi
 (cd "$BUILD_DIR" && zip -r "${PROJECT_DIR}/function.zip" . -q)
 echo "Package size: $(du -h function.zip | cut -f1)"
 
@@ -83,8 +74,8 @@ if ! aws ssm get-parameter --name "$SSM_PARAM_NAME" --region "$REGION" >/dev/nul
 fi
 
 echo "== 4/6 Creating/updating Lambda function =="
-export SYNC_CONFIGS SSM_PARAM_NAME
-ENV_JSON=$(python3 -c "import json, os; print(json.dumps({'Variables': {'SYNC_CONFIGS': os.environ['SYNC_CONFIGS'], 'SERVICE_ACCOUNT_PARAM': os.environ['SSM_PARAM_NAME']}}))")
+export SSM_PARAM_NAME
+ENV_JSON=$(python3 -c "import json, os; print(json.dumps({'Variables': {'SERVICE_ACCOUNT_PARAM': os.environ['SSM_PARAM_NAME']}}))")
 
 if aws lambda get-function --function-name "$FUNCTION_NAME" --region "$REGION" >/dev/null 2>&1; then
   aws lambda update-function-code \

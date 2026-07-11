@@ -62,23 +62,35 @@ Open `deploy.sh` and edit the config block at the top:
 - `REGION` — an AWS region close to you.
 - `SSM_PARAM_NAME` — path to the SSM parameter created in step 3.
 - `SCHEDULE_EXPRESSION` — daily cron schedule (defaults to daily at 05:00 UTC).
-- `SYNC_CONFIGS` — A JSON array of the iCal feeds you want to sync. You can configure multiple feeds to sync from a single Lambda function!
 
-### Config Example:
-```bash
-SYNC_CONFIGS='[
+Create a `sync_configs.py` file in the project root with your feed configurations:
+
+### sync_configs.py Example:
+```python
+CONFIGS = [
   {
     "ical_url": "https://app.myice.hockey/api/players/ical/50553/113",
     "calendar_id": "primary",
-    "uid_prefix": "hockey1-"
+    "uid_prefix": "hockey1-",
+    "summary_format": "🏒 {summary}",
+    "color_id": "11"
   },
   {
     "ical_url": "https://app.myice.hockey/api/players/ical/50553/114",
     "calendar_id": "primary",
-    "uid_prefix": "hockey2-"
+    "uid_prefix": "hockey2-",
+    "summary_format": "{summary} (away)",
+    "color_id": "5"
   }
-]'
+]
 ```
+
+### Configuration Options:
+- `ical_url` (required) — URL of the iCal feed to sync
+- `calendar_id` (required) — Google Calendar ID (use "primary" for your main calendar)
+- `uid_prefix` (default: "ical-") — Prefix to namespace UIDs, must be unique per feed
+- `summary_format` (default: "{summary}") — Format string for event titles, use `{summary}` as placeholder
+- `color_id` (optional) — Google Calendar color ID 1-11 (see lambda_function.py COLOR_REFERENCE)
 
 > [!IMPORTANT]
 > **Use unique `uid_prefix` values** for each configured feed! This isolates their events so that the sync process for one feed doesn't conflict-delete the events synced by another feed.
