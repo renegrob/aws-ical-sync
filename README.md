@@ -1,6 +1,6 @@
-# Hockey iCal → Google Calendar Sync (uv Edition)
+# iCal → Google Calendar Sync (uv Edition)
 
-Daily job that pulls one or more `myice.hockey` iCal schedules and mirrors them into Google Calendar. Runs serverless on AWS Lambda + EventBridge Scheduler. Expected cost is $0–$0.05/month (well inside the AWS free tier).
+Daily job that pulls one or more iCal schedules and mirrors them into Google Calendar. Runs serverless on AWS Lambda + EventBridge Scheduler. Expected cost is $0–$0.05/month (well inside the AWS free tier).
 
 How it stays reliable without a database: every event is pushed to Google via `events.import()` keyed on a prefixed `iCalUID`. Google itself creates the event if the UID is new, or updates it in place if it already exists — so re-running the sync never creates duplicates. Events removed from the source feed are cleaned up by comparing the current feed's UIDs against a tagged set of previously-synced events on the calendar.
 
@@ -28,9 +28,9 @@ You need a Google Cloud project, the Calendar API enabled, and a service account
 
 1. Go to https://console.cloud.google.com/ and create a new project.
 2. Enable the Calendar API: go to **APIs & Services → Library**, search **Google Calendar API**, and click **Enable**.
-3. Create a service account: **APIs & Services → Credentials → Create Credentials → Service account**. Give it any name, e.g. `hockey-calendar-sync`. No roles/permissions need to be granted at the project level.
+3. Create a service account: **APIs & Services → Credentials → Create Credentials → Service account**. Give it any name, e.g. `aws-ical-sync`. No roles/permissions need to be granted at the project level.
 4. Open the service account, go to the **Keys** tab → **Add Key → Create new key → JSON**. This downloads a `.json` key file — keep it, you'll paste its contents into AWS in the next step.
-5. Note the service account's email address (e.g. `hockey-calendar-sync@your-project.iam.gserviceaccount.com`).
+5. Note the service account's email address (e.g. `aws-ical-sync@your-project.iam.gserviceaccount.com`).
 
 **Share your calendar with the service account:**
 1. Open Google Calendar → find the calendar you want events added to (or use your main calendar) → **Settings and sharing**.
@@ -45,7 +45,7 @@ Using the `.json` key file downloaded above, store it in AWS Systems Manager Par
 
 ```bash
 aws ssm put-parameter \
-  --name "/hockey-sync/google-service-account" \
+  --name "/ical-sync/google-service-account" \
   --type SecureString \
   --value file://path/to/your-service-account-key.json \
   --region eu-central-1
@@ -102,7 +102,7 @@ Trigger the sync manually:
 
 ```bash
 aws lambda invoke \
-  --function-name hockey-calendar-sync \
+  --function-name aws-ical-sync \
   --region eu-central-1 \
   --log-type Tail \
   out.json
@@ -113,7 +113,7 @@ You should see a list of results summarizing imported and deleted events for eac
 
 To tail logs:
 ```bash
-aws logs tail /aws/lambda/hockey-calendar-sync --region eu-central-1 --since 1d
+aws logs tail /aws/lambda/aws-ical-sync --region eu-central-1 --since 1d
 ```
 
 ---

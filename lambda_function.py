@@ -21,7 +21,7 @@ from googleapiclient.discovery import build
 from icalendar import Calendar
 
 SSM_PARAM_NAME = os.environ["SERVICE_ACCOUNT_PARAM"]
-SOURCE_TAG = "myicehockey-sync"
+SOURCE_TAG = "aws-ical-sync"
 
 
 def get_service_account_info():
@@ -39,7 +39,7 @@ def get_calendar_service():
 
 
 def fetch_ical(ical_url: str):
-    req = urllib.request.Request(ical_url, headers={"User-Agent": "hockey-sync-lambda"})
+    req = urllib.request.Request(ical_url, headers={"User-Agent": "ical-sync-lambda"})
     with urllib.request.urlopen(req, timeout=30) as resp:
         data = resp.read()
     return Calendar.from_ical(data)
@@ -53,7 +53,7 @@ def normalize_uid(raw_uid: str, uid_prefix: str) -> str:
 
 
 def event_to_google_body(component, uid: str) -> dict:
-    summary = str(component.get("summary", "Hockey Event"))
+    summary = str(component.get("summary", "iCal Event"))
     location = component.get("location")
     description = component.get("description")
 
@@ -152,7 +152,7 @@ def handler(event, context):
     else:
         fallback_url = os.environ.get("ICAL_URL")
         fallback_cal = os.environ.get("GOOGLE_CALENDAR_ID")
-        fallback_prefix = os.environ.get("UID_PREFIX", "myicehockey-")
+        fallback_prefix = os.environ.get("UID_PREFIX", "ical-")
         if fallback_url and fallback_cal:
             configs = [{
                 "ical_url": fallback_url,
@@ -167,7 +167,7 @@ def handler(event, context):
     for idx, config in enumerate(configs):
         ical_url = config.get("ical_url")
         calendar_id = config.get("calendar_id")
-        uid_prefix = config.get("uid_prefix", "myicehockey-")
+        uid_prefix = config.get("uid_prefix", "ical-")
 
         if not ical_url or not calendar_id:
             print(f"Config at index {idx} is missing ical_url or calendar_id: {config}")

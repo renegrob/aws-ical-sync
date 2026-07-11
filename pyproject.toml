@@ -1,7 +1,7 @@
 [project]
 name = "aws-ical-sync"
 version = "0.1.0"
-description = "Syncs iCal hockey schedules to Google Calendar using AWS Lambda"
+description = "Syncs iCal schedules to Google Calendar using AWS Lambda"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

@@ -9,7 +9,7 @@
     {
       "Effect": "Allow",
       "Action": ["ssm:GetParameter"],
-      "Resource": "arn:aws:ssm:*:*:parameter/hockey-sync/google-service-account"
+      "Resource": "arn:aws:ssm:*:*:parameter/ical-sync/google-service-account"
     }
   ]
 }
