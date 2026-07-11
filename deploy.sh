@@ -16,7 +16,7 @@ set -euo pipefail
 
 # ---- Config: edit these ----------------------------------------------
 FUNCTION_NAME="aws-ical-sync"
-REGION="eu-central-1"                     # pick a region close to you
+REGION="eu-central-2"
 SSM_PARAM_NAME="/ical-sync/google-service-account"
 SCHEDULE_EXPRESSION="cron(0 5 * * ? *)"   # 05:00 UTC daily - edit as needed
 ROLE_NAME="aws-ical-sync-role"
@@ -27,7 +27,12 @@ SYNC_CONFIGS='[
   {
     "ical_url": "https://app.myice.hockey/api/players/ical/50553/113",
     "calendar_id": "rene.grob76@gmail.com",
-    "uid_prefix": "hockey1-"
+    "uid_prefix": "ehc-"
+  },
+  {
+    "ical_url": "https://app.myice.hockey/api/players/ical/50553/7",
+    "calendar_id": "rene.grob76@gmail.com",
+    "uid_prefix": "shif-"
   }
 ]'
 # ------------------------------------------------------------------------

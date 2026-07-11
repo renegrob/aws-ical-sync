@@ -48,7 +48,7 @@ aws ssm put-parameter \
   --name "/ical-sync/google-service-account" \
   --type SecureString \
   --value file://path/to/your-service-account-key.json \
-  --region eu-central-1
+  --region eu-central-2
 ```
 
 Use the same region here as in `deploy.sh`.
@@ -103,7 +103,7 @@ Trigger the sync manually:
 ```bash
 aws lambda invoke \
   --function-name aws-ical-sync \
-  --region eu-central-1 \
+  --region eu-central-2 \
   --log-type Tail \
   out.json
 cat out.json
@@ -113,7 +113,7 @@ You should see a list of results summarizing imported and deleted events for eac
 
 To tail logs:
 ```bash
-aws logs tail /aws/lambda/aws-ical-sync --region eu-central-1 --since 1d
+aws logs tail /aws/lambda/aws-ical-sync --region eu-central-2 --since 1d
 ```
 
 ---
