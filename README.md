@@ -65,24 +65,9 @@ Open `deploy.sh` and edit the config block at the top:
 
 Create a `sync_configs.py` file in the project root with your feed configurations:
 
-### sync_configs.py Example:
-```python
-CONFIGS = [
-  {
-    "ical_url": "https://app.myice.hockey/api/players/ical/50553/113",
-    "calendar_id": "primary",
-    "uid_prefix": "hockey1-",
-    "summary_format": "🏒 {summary}",
-    "color_id": "11"
-  },
-  {
-    "ical_url": "https://app.myice.hockey/api/players/ical/50553/114",
-    "calendar_id": "primary",
-    "uid_prefix": "hockey2-",
-    "summary_format": "{summary} (away)",
-    "color_id": "5"
-  }
-]
+```bash
+cp sync_configs_example.py sync_configs.py
+# Then edit sync_configs.py with your feed configurations
 ```
 
 ### Configuration Options:

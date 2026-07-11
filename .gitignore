@@ -27,6 +27,8 @@ share/python-wheels/
 out.json
 # Lambda deployment packages
 function.zip
+sync_configs.py
+.build
 
 # Virtual Environments
 .venv/
