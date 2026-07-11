@@ -22,7 +22,7 @@ from icalendar import Calendar
 
 SSM_PARAM_NAME = os.environ["SERVICE_ACCOUNT_PARAM"]
 SOURCE_TAG = "aws-ical-sync"
-
+DEFAULT_TIMEZONE = os.environ.get("DEFAULT_TIMEZONE", "Europe/Zurich")
 
 def get_service_account_info():
     ssm = boto3.client("ssm")
@@ -72,10 +72,16 @@ def event_to_google_body(component, uid: str) -> dict:
     if description:
         body["description"] = str(description)
 
-    # All-day (date only) vs timed (datetime) events need different fields
+    # All-day (date only) vs timed (datetime) events need different fields.
+    # Google's events.import() endpoint requires an explicit timeZone
+    # alongside dateTime - it won't infer one from a UTC offset the way
+    # events.insert() does, so we always set one explicitly.
     if hasattr(dtstart, "hour"):
-        body["start"] = {"dateTime": dtstart.isoformat()}
-        body["end"] = {"dateTime": dtend.isoformat()}
+        tz = dtstart.tzinfo
+        tzname = getattr(tz, "zone", None) if tz is not None else None
+        tzname = tzname or DEFAULT_TIMEZONE
+        body["start"] = {"dateTime": dtstart.isoformat(), "timeZone": tzname}
+        body["end"] = {"dateTime": dtend.isoformat(), "timeZone": tzname}
     else:
         body["start"] = {"date": dtstart.isoformat()}
         body["end"] = {"date": dtend.isoformat()}
@@ -124,6 +130,7 @@ def sync_feed(service, ical_url: str, calendar_id: str, uid_prefix: str) -> dict
         current_uids.add(uid)
 
         body = event_to_google_body(component, uid)
+        # print(f"DEBUG body: {json.dumps(body)}")  # temporary - remove after diagnosing
         service.events().import_(calendarId=calendar_id, body=body).execute()
         imported += 1
 
@@ -195,4 +202,3 @@ def handler(event, context):
     if not overall_success:
         raise RuntimeError("One or more feeds failed to sync.")
     return results
-
